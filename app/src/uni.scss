@@ -1,0 +1,32 @@
+/**
+ * 命运转盘 · 品牌视觉变量
+ * 方案B：薄荷绿→天蓝渐变 + 橙黄青绿湖蓝四色圆角扇形转盘 + 白色定位针 + 深青绿字标
+ */
+
+/* 品牌主色 */
+$fw-mint: #4FD3B0;          // 薄荷绿
+$fw-sky: #4FB7E8;           // 天蓝
+$fw-deep: #1F6E5F;          // 深青绿（字标/正文强调）
+$fw-ink: #1A3B34;           // 墨绿黑（主文字）
+
+/* 四色转盘 */
+$fw-orange: #FF8A3D;
+$fw-yellow: #FFC94D;
+$fw-teal: #2EC77E;
+$fw-lake: #3FA7E0;
+
+/* 渐变 */
+$fw-gradient: linear-gradient(135deg, #DFF7F0 0%, #D5EEF7 100%);
+$fw-gradient-strong: linear-gradient(135deg, #34D0A8 0%, #38B6E8 100%);
+
+/* 中性 */
+$fw-bg: #F5F9F7;
+$fw-card: #FFFFFF;
+$fw-line: #E6EFEB;
+$fw-text-2: #7A8A84;
+$fw-text-3: #A9B8B2;
+
+/* 语义色 */
+$fw-success: #2EC77E;
+$fw-warn: #FF8A3D;
+$fw-danger: #EA6668;

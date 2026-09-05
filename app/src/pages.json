@@ -1,0 +1,98 @@
+{
+	"pages": [
+		{
+			"path": "pages/guide/guide",
+			"style": {
+				"navigationStyle": "custom",
+				"disableScroll": true
+			}
+		},
+		{
+			"path": "pages/login/login",
+			"style": {
+				"navigationStyle": "custom",
+				"disableScroll": true
+			}
+		},
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/wheel/wheel",
+			"style": {
+				"navigationBarTitleText": "选什么",
+				"navigationBarBackgroundColor": "#F5F9F7",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/scale/scale",
+			"style": {
+				"navigationBarTitleText": "去不去",
+				"navigationBarBackgroundColor": "#F5F9F7",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/buy/buy",
+			"style": {
+				"navigationBarTitleText": "买不买",
+				"navigationBarBackgroundColor": "#F5F9F7",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/map/map",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/mark/mark",
+			"style": {
+				"navigationBarTitleText": "标记地点",
+				"navigationBarBackgroundColor": "#F5F9F7",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/archive/archive",
+			"style": {
+				"navigationBarTitleText": "决策档案",
+				"navigationBarBackgroundColor": "#F5F9F7",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/group/group",
+			"style": {
+				"navigationBarTitleText": "宿舍小组",
+				"navigationBarBackgroundColor": "#F5F9F7",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/alumni/alumni",
+			"style": {
+				"navigationBarTitleText": "本校地图",
+				"navigationBarBackgroundColor": "#F5F9F7",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/mine/mine",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "命运转盘",
+		"navigationBarBackgroundColor": "#F5F9F7",
+		"backgroundColor": "#F5F9F7"
+	}
+}
