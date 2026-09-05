@@ -5,7 +5,7 @@
       <view class="hero-nav">
         <view class="hero-brand">
           <view class="mini-wheel" :style="{ background: logoConic }"></view>
-          <text class="hero-brand-name">命运转盘</text>
+          <text class="hero-brand-name">摇去哪</text>
         </view>
         <view class="hero-streak" @click="goArchive">
           <text class="streak-num">{{ stats.streak }}</text>

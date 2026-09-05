@@ -1,5 +1,5 @@
 -- ----------------------------
--- 命运转盘 Fate Wheel 业务表
+-- 摇去哪 Fate Wheel 业务表
 -- 配套若依 RuoYi-Vue 3.9.2 后端
 -- 在导入 ry_20260417.sql 之后再导入本脚本
 -- ----------------------------
@@ -158,10 +158,10 @@ create table fw_order (
 ) engine=innodb auto_increment=100 comment = '权益订单表';
 
 -- ----------------------------
--- 菜单与权限（命运转盘管理）
+-- 菜单与权限（摇去哪管理）
 -- 菜单id 从 2000 开始，避免与若依默认菜单冲突
 -- ----------------------------
-insert into sys_menu values('2000', '命运转盘管理', '0', '10', 'fatewheel', null, '', '', 1, 0, 'M', '0', '0', '', 'chart', 'admin', sysdate(), '', null, '命运转盘管理目录');
+insert into sys_menu values('2000', '摇去哪管理', '0', '10', 'fatewheel', null, '', '', 1, 0, 'M', '0', '0', '', 'chart', 'admin', sysdate(), '', null, '摇去哪管理目录');
 
 -- 标记管理
 insert into sys_menu values('2001', '标记管理', '2000', '1', 'mark', 'fatewheel/mark/index', '', '', 1, 0, 'C', '0', '0', 'fatewheel:mark:list', 'location', 'admin', sysdate(), '', null, '标记管理菜单');
@@ -194,7 +194,7 @@ insert into sys_menu values('2041', '订单查询', '2040', '1', '#', '', '', ''
 insert into sys_menu values('2050', '数据统计', '2000', '6', 'stat', 'fatewheel/stat/index', '', '', 1, 0, 'C', '0', '0', 'fatewheel:stat:list', 'chart', 'admin', sysdate(), '', null, '数据统计菜单');
 insert into sys_menu values('2051', '统计查看', '2050', '1', '#', '', '', '', 1, 0, 'F', '0', '0', 'fatewheel:stat:query', '#', 'admin', sysdate(), '', null, '');
 
--- 给管理员角色(1)分配命运转盘管理菜单权限
+-- 给管理员角色(1)分配摇去哪管理菜单权限
 insert into sys_role_menu values('1', '2000');
 insert into sys_role_menu values('1', '2001');
 insert into sys_role_menu values('1', '2002');

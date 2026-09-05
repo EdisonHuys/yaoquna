@@ -1,5 +1,5 @@
 /**
- * HTTP 请求封装（若依后端对接）
+ * HTTP 请求封装（摇去哪后端对接）
  * - 统一注入 Authorization: Bearer token
  * - 401 时清理登录态并跳转登录页
  * - 业务失败（code!==200）统一 reject，message 抛出

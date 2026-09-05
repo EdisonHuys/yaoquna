@@ -11,7 +11,7 @@
           <view class="logo-wheel" :style="{ background: logoConic }"></view>
           <view class="logo-pin"></view>
         </view>
-        <view class="brand-name">命运转盘</view>
+        <view class="brand-name">摇去哪</view>
         <view class="brand-sub">FATE WHEEL</view>
       </view>
 

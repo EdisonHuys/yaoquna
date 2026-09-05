@@ -32,7 +32,7 @@
     <!-- Pro 会员 -->
     <view class="pro-card" @click="openPro">
       <view class="pro-left">
-        <text class="pro-title">命运转盘 PRO</text>
+        <text class="pro-title">摇去哪 PRO</text>
         <view class="pro-features">
           <text class="pf">无限标记</text>
           <text class="pf">全部皮肤</text>

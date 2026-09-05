@@ -1,6 +1,6 @@
-# 命运转盘 · 若依后端 + 管理端部署手册
+# 摇去哪 · 若依后端 + 管理端部署手册
 
-> 本工程是「命运转盘」App 的**后端**（RuoYi-Vue 3.9.2）与**管理端**（RuoYi-Vue3 前端）。
+> 本工程是「摇去哪」App 的**后端**（RuoYi-Vue 3.9.2）与**管理端**（RuoYi-Vue3 前端）。
 > App 端 uni-app 前端见同目录的 `fate-wheel-app/`。
 >
 > 你在本机已完成**编译验证**（`mvn package` BUILD SUCCESS，产物 `ruoyi-admin.jar`），
@@ -14,7 +14,7 @@
 fate-wheel-ruoyi/                 # 后端 + 管理端工程（本目录）
 ├── sql/
 │   ├── ry_20260417.sql           # 若依框架基础库（系统表、菜单、admin 账号）
-│   └── fw_business.sql           # 命运转盘业务库（9 张业务表 + 菜单 2000-2051）
+│   └── fw_business.sql           # 摇去哪业务库（9 张业务表 + 菜单 2000-2051）
 ├── ruoyi-admin/                  # 启动模块（打成 ruoyi-admin.jar）
 │   └── src/main/java/com/ruoyi/
 │       ├── web/controller/fatewheel/   # 管理端接口（标记/举报/学校/用户/订单/统计）
@@ -53,13 +53,13 @@ USE `ry-vue`;
 # 2) 先导入若依框架库
 source /path/to/fate-wheel-ruoyi/sql/ry_20260417.sql;
 
-# 3) 再导入命运转盘业务库（9 张表 + 菜单权限）
+# 3) 再导入摇去哪业务库（9 张表 + 菜单权限）
 source /path/to/fate-wheel-ruoyi/sql/fw_business.sql;
 ```
 
 > `fw_business.sql` 内含：fw_school / fw_user_extend / fw_mark / fw_group / fw_group_member /
 > fw_decision / fw_favorite / fw_report / fw_order 九张业务表，以及
-> 「命运转盘管理」目录 + 6 个子菜单（ID 2000-2051）与 admin 角色（role_id=1）的授权。
+> 「摇去哪管理」目录 + 6 个子菜单（ID 2000-2051）与 admin 角色（role_id=1）的授权。
 > 重复执行会报错，可先 `DROP TABLE` 或仅在首次导入。
 
 **演示数据（可选）**：在 `fw_school` 里插入你的学校，例如：
@@ -236,5 +236,5 @@ export const BASE_URL = 'http://你的服务器IP:8080'
 | 登录验证码出不来 | Redis 未启动：`redis-server` |
 | App 请求 401 | token 过期或未带；重新登录 |
 | 管理端页面空白/404 | dist 未部署正确或路由未匹配；确认用 `build:prod` 构建，Nginx `try_files` 指向 index.html |
-| 菜单看不到「命运转盘管理」 | 确认已导入 fw_business.sql，且用 admin 登录（role_id=1 已授权） |
+| 菜单看不到「摇去哪管理」 | 确认已导入 fw_business.sql，且用 admin 登录（role_id=1 已授权） |
 | Android/iOS 支付 | fw_order 表已预留，`FwOrderService.confirmPay` 中 `TODO` 处对接微信虚拟支付回调发放权益 |

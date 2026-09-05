@@ -1,8 +1,8 @@
 {
-  "name": "ruoyi",
+  "name": "yaoquna-admin",
   "version": "3.9.2",
-  "description": "若依管理系统",
-  "author": "若依",
+  "description": "摇去哪管理系统",
+  "author": "摇去哪",
   "license": "MIT",
   "type": "module",
   "scripts": {

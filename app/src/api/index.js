@@ -1,5 +1,5 @@
 /**
- * API 接口层（若依后端对接版）
+ * API 接口层（摇去哪后端对接版）
  *
  * 后端契约（fate-wheel-ruoyi 工程）：
  *   POST /api/login        { openid, nickname, avatar } -> { token, user }

@@ -91,7 +91,7 @@
 	],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
-		"navigationBarTitleText": "命运转盘",
+		"navigationBarTitleText": "摇去哪",
 		"navigationBarBackgroundColor": "#F5F9F7",
 		"backgroundColor": "#F5F9F7"
 	}
