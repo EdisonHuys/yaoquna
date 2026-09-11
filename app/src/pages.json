@@ -93,6 +93,34 @@
 		"navigationBarTextStyle": "black",
 		"navigationBarTitleText": "摇去哪",
 		"navigationBarBackgroundColor": "#F5F9F7",
-		"backgroundColor": "#F5F9F7"
+		"backgroundColor": "#F5F9F7",
+		"backgroundColorTop": "#F5F9F7",
+		"backgroundColorBottom": "#F5F9F7"
+	},
+	"tabBar": {
+		"color": "#8EA49D",
+		"selectedColor": "#1F6E5F",
+		"backgroundColor": "#FFFFFF",
+		"borderStyle": "white",
+		"list": [
+			{
+				"pagePath": "pages/index/index",
+				"text": "首页",
+				"iconPath": "static/tabbar/home.png",
+				"selectedIconPath": "static/tabbar/home-active.png"
+			},
+			{
+				"pagePath": "pages/map/map",
+				"text": "地图",
+				"iconPath": "static/tabbar/map.png",
+				"selectedIconPath": "static/tabbar/map-active.png"
+			},
+			{
+				"pagePath": "pages/mine/mine",
+				"text": "我的",
+				"iconPath": "static/tabbar/mine.png",
+				"selectedIconPath": "static/tabbar/mine-active.png"
+			}
+		]
 	}
 }

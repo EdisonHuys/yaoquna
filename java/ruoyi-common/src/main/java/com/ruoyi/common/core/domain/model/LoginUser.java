@@ -82,6 +82,11 @@ public class LoginUser implements UserDetails
     public LoginUser(SysUser user, Set<String> permissions)
     {
         this.user = user;
+        if (user != null)
+        {
+            this.userId = user.getUserId();
+            this.deptId = user.getDeptId();
+        }
         this.permissions = permissions;
     }
 
@@ -95,7 +100,7 @@ public class LoginUser implements UserDetails
 
     public Long getUserId()
     {
-        return userId;
+        return userId != null ? userId : (user != null ? user.getUserId() : null);
     }
 
     public void setUserId(Long userId)
@@ -105,7 +110,7 @@ public class LoginUser implements UserDetails
 
     public Long getDeptId()
     {
-        return deptId;
+        return deptId != null ? deptId : (user != null ? user.getDeptId() : null);
     }
 
     public void setDeptId(Long deptId)

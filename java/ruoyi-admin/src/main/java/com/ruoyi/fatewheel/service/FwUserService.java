@@ -88,7 +88,7 @@ public class FwUserService
         }
 
         // 生成 token
-        LoginUser loginUser = new LoginUser(sysUser, new java.util.HashSet<String>());
+        LoginUser loginUser = new LoginUser(sysUser.getUserId(), sysUser.getDeptId(), sysUser, new java.util.HashSet<String>());
         String token = tokenService.createToken(loginUser);
 
         AppUserVO user = toAppUserVO(sysUser, ext);

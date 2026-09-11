@@ -102,37 +102,69 @@ export default {
     pinColor(c) { return categoryColor(c) },
     timeAgo,
     async loadAlumni() {
-      const res = await api.getAlumniMarks(store.user ? store.user.schoolId : 'school_suda')
-      this.alumniMarks = res.data
+      const sid = store.user && store.user.schoolId ? store.user.schoolId : null
+      try {
+        const res = await api.getAlumniMarks(sid)
+        this.alumniMarks = res.data || []
+      } catch (e) {
+        this.alumniMarks = []
+      }
     },
-    editSchool() {
-      const schools = ['苏州大学', '南京大学', '浙江大学', '复旦大学', '上海交通大学']
+    async editSchool() {
+      let list = []
+      try {
+        const res = await api.getSchools()
+        list = (res.data || []).map(s => ({ schoolId: s.schoolId, schoolName: s.schoolName }))
+      } catch (e) { /* ignore */ }
+
+      if (!list || list.length === 0) {
+        list = [
+          { schoolId: 1, schoolName: '苏州大学' },
+          { schoolId: 2, schoolName: '南京大学' },
+          { schoolId: 3, schoolName: '东南大学' },
+          { schoolId: 4, schoolName: '西交利物浦大学' },
+          { schoolId: 5, schoolName: '中国人民大学(苏州)' }
+        ]
+      }
+
       uni.showActionSheet({
-        itemList: schools,
+        itemList: list.map(s => s.schoolName),
         success: async res => {
-          const name = schools[res.tapIndex]
-          await api.setSchool('school_' + res.tapIndex, name)
-          uni.showToast({ title: '已选择 ' + name, icon: 'none' })
-          this.loadAlumni()
+          const item = list[res.tapIndex]
+          try {
+            await api.setSchool(item.schoolId, item.schoolName)
+            uni.showToast({ title: '已选择 ' + item.schoolName, icon: 'none' })
+            this.loadAlumni()
+          } catch (e) {
+            uni.showToast({ title: '选择失败，请重试', icon: 'none' })
+          }
         }
       })
     },
-    collect(m) {
-      // 收藏 = 复制一份到个人库
-      store.addMark({
-        name: m.name,
-        category: m.category,
-        tags: [...m.tags],
-        rating: m.rating,
-        price: m.price,
-        note: m.note,
-        address: m.address,
-        lat: m.lat,
-        lng: m.lng,
-        shareScope: 'private',
-        groupIds: []
-      })
-      uni.showToast({ title: '已收藏到我的标记', icon: 'success' })
+    async collect(m) {
+      try {
+        uni.showLoading({ title: '处理中…' })
+        await api.toggleFavorite(m.id)
+        uni.hideLoading()
+        uni.showToast({ title: m.favorited ? '已取消收藏' : '收藏成功！', icon: 'success' })
+      } catch (e) {
+        uni.hideLoading()
+        // 复制一份到个人标记库
+        store.addMark({
+          name: m.name,
+          category: m.category,
+          tags: [...(m.tags || [])],
+          rating: m.rating,
+          price: m.price,
+          note: m.note || m.remark,
+          address: m.address,
+          lat: m.lat,
+          lng: m.lng,
+          shareScope: 'private',
+          groupIds: []
+        })
+        uni.showToast({ title: '已转存至我的标记', icon: 'success' })
+      }
     },
     useWheel(m) {
       uni.navigateTo({ url: '/pages/wheel/wheel' })
@@ -140,10 +172,17 @@ export default {
     report(m) {
       uni.showModal({
         title: '举报地点',
-        content: '举报「' + m.name + '」？\n（违规/虚假信息/侵权）',
-        confirmText: '举报',
-        success: res => {
-          if (res.confirm) uni.showToast({ title: '已提交，感谢反馈', icon: 'none' })
+        content: '确定举报「' + m.name + '」？\n（违规/虚假信息/侵权）',
+        confirmText: '确认举报',
+        success: async res => {
+          if (res.confirm) {
+            try {
+              await api.submitReport(m.id, '违规/虚假信息')
+              uni.showToast({ title: '举报已提交，核实中', icon: 'success' })
+            } catch (e) {
+              uni.showToast({ title: '已提交，感谢反馈', icon: 'none' })
+            }
+          }
         }
       })
     },
@@ -157,126 +196,301 @@ export default {
 <style scoped>
 .alumni-page {
   min-height: 100vh;
-  padding-bottom: 60rpx;
+  background: #F4F8F6;
+  padding-bottom: calc(60rpx + constant(safe-area-inset-bottom));
+  padding-bottom: calc(60rpx + env(safe-area-inset-bottom));
   box-sizing: border-box;
 }
+
+/* 头部 Hero 区域 */
 .alumni-hero {
-  background: linear-gradient(150deg, #DFF7F0 0%, #D5EEF7 100%);
-  padding: 24rpx 32rpx 40rpx;
+  background: linear-gradient(150deg, #E6F5F0 0%, #D8EFE8 60%, #E2F4EE 100%);
+  padding: 24rpx 32rpx 36rpx;
+  border-bottom: 1.5rpx solid rgba(225, 237, 232, 0.8);
 }
 .school-row {
   display: flex;
   align-items: center;
-  gap: 18rpx;
+  gap: 20rpx;
 }
-.school-badge { font-size: 44rpx; }
-.school-info { flex: 1; display: flex; flex-direction: column; }
-.school-name { font-size: 32rpx; font-weight: 800; color: #1A3B34; }
-.school-sub { font-size: 22rpx; color: #5E8F81; margin-top: 4rpx; }
+.school-badge {
+  font-size: 52rpx;
+  filter: drop-shadow(0 4rpx 10rpx rgba(31, 110, 95, 0.15));
+}
+.school-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.school-name {
+  font-size: 38rpx;
+  font-weight: 900;
+  color: #14352D;
+  letter-spacing: 1rpx;
+}
+.school-sub {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #2D6A5D;
+  margin-top: 6rpx;
+}
 .school-edit {
   font-size: 24rpx;
+  font-weight: 800;
   color: #1F6E5F;
-  background: rgba(255,255,255,0.85);
-  padding: 10rpx 24rpx;
-  border-radius: 999rpx;
-}
-.alumni-banner {
-  margin-top: 26rpx;
   background: #FFFFFF;
-  border-radius: 24rpx;
+  padding: 12rpx 28rpx;
+  border-radius: 999rpx;
+  border: 1.5rpx solid rgba(31, 110, 95, 0.18);
+  box-shadow: 0 4rpx 14rpx rgba(31, 110, 95, 0.08);
+  transition: transform 0.15s ease;
+}
+.school-edit:active {
+  transform: scale(0.94);
+}
+
+/* 宣传横幅卡片 */
+.alumni-banner {
+  margin-top: 28rpx;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 28rpx;
   padding: 24rpx 28rpx;
   display: flex;
   flex-direction: column;
-  gap: 6rpx;
+  gap: 8rpx;
+  border: 1.5rpx solid rgba(225, 237, 232, 0.95);
+  box-shadow: 0 8rpx 24rpx rgba(31, 110, 95, 0.06);
 }
-.banner-t1 { font-size: 30rpx; font-weight: 700; color: #1F6E5F; }
-.banner-t2 { font-size: 22rpx; color: #7A8A84; }
+.banner-t1 {
+  font-size: 30rpx;
+  font-weight: 800;
+  color: #14352D;
+}
+.banner-t2 {
+  font-size: 24rpx;
+  color: #5C7C73;
+  font-weight: 500;
+}
+
+/* 空状态：未选学校 */
 .no-school {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 120rpx 60rpx;
+  margin: 60rpx 32rpx;
+  padding: 80rpx 48rpx;
   text-align: center;
+  background: #FFFFFF;
+  border-radius: 36rpx;
+  border: 1.5rpx solid rgba(225, 237, 232, 0.9);
+  box-shadow: 0 10rpx 32rpx rgba(31, 110, 95, 0.06);
 }
-.ns-emoji { font-size: 90rpx; }
-.ns-title { font-size: 36rpx; font-weight: 800; color: #1A3B34; margin-top: 24rpx; }
-.ns-desc { font-size: 26rpx; color: #7A8A84; margin-top: 16rpx; line-height: 1.7; }
-.ns-btn { margin-top: 40rpx; width: 320rpx; }
+.ns-emoji {
+  font-size: 100rpx;
+  margin-bottom: 16rpx;
+  filter: drop-shadow(0 6rpx 16rpx rgba(31, 110, 95, 0.12));
+}
+.ns-title {
+  font-size: 38rpx;
+  font-weight: 900;
+  color: #14352D;
+  margin-top: 16rpx;
+}
+.ns-desc {
+  font-size: 26rpx;
+  color: #5C7C73;
+  margin-top: 16rpx;
+  line-height: 1.7;
+}
+.ns-btn {
+  margin-top: 44rpx;
+  width: 360rpx;
+  height: 90rpx;
+  line-height: 90rpx;
+  font-size: 30rpx;
+  font-weight: 800;
+  border-radius: 999rpx;
+}
+
+/* 分类筛选横滑条 */
 .filter-bar {
   white-space: nowrap;
-  padding: 24rpx 32rpx 0;
+  padding: 28rpx 32rpx 0;
   width: 100%;
   box-sizing: border-box;
 }
 .filter-chip {
   display: inline-flex;
-  padding: 12rpx 30rpx;
+  padding: 14rpx 34rpx;
   border-radius: 999rpx;
   font-size: 26rpx;
+  font-weight: 700;
   background: #FFFFFF;
-  color: #7A8A84;
-  margin-right: 16rpx;
-  box-shadow: 0 4rpx 16rpx rgba(31,110,95,0.05);
+  color: #5C7C73;
+  margin-right: 18rpx;
+  border: 1.5rpx solid rgba(225, 237, 232, 0.9);
+  box-shadow: 0 4rpx 14rpx rgba(31, 110, 95, 0.04);
+  transition: all 0.2s ease;
 }
-.filter-chip.on { background: #1F6E5F; color: #FFFFFF; font-weight: 600; }
-.a-list { padding: 24rpx 32rpx 0; }
+.filter-chip.on {
+  background: linear-gradient(135deg, #248875 0%, #1B6557 100%);
+  color: #FFFFFF;
+  border-color: #1F6E5F;
+  box-shadow: 0 6rpx 18rpx rgba(31, 110, 95, 0.25);
+}
+.filter-chip:active {
+  transform: scale(0.95);
+}
+
+/* 地点列表 */
+.a-list {
+  padding: 24rpx 32rpx 0;
+}
 .a-item {
   background: #FFFFFF;
-  border-radius: 24rpx;
-  padding: 26rpx;
-  margin-bottom: 18rpx;
-  box-shadow: 0 6rpx 24rpx rgba(31,110,95,0.05);
+  border-radius: 32rpx;
+  padding: 30rpx 28rpx;
+  margin-bottom: 22rpx;
+  border: 1.5rpx solid rgba(225, 237, 232, 0.95);
+  box-shadow: 0 8rpx 28rpx rgba(31, 110, 95, 0.06);
+  transition: transform 0.15s ease;
 }
-.a-top { display: flex; align-items: flex-start; gap: 18rpx; }
+.a-item:active {
+  transform: scale(0.99);
+}
+.a-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 18rpx;
+}
 .a-dot {
-  flex: 0 0 16rpx;
-  width: 16rpx;
-  height: 64rpx;
+  flex: 0 0 14rpx;
+  width: 14rpx;
+  height: 60rpx;
   border-radius: 8rpx;
-  margin-top: 4rpx;
+  margin-top: 6rpx;
 }
-.a-name-box { flex: 1; display: flex; flex-direction: column; }
-.a-name { font-size: 30rpx; font-weight: 700; color: #1A3B34; }
-.a-meta { font-size: 22rpx; color: #A9B8B2; margin-top: 6rpx; }
-.a-fav { font-size: 22rpx; color: #EA6668; }
-.a-tags { display: flex; gap: 10rpx; flex-wrap: wrap; margin-top: 16rpx; }
-.tag {
-  font-size: 20rpx;
-  color: #4A5D57;
-  background: #F2F6F4;
-  padding: 4rpx 16rpx;
+.a-name-box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.a-name {
+  font-size: 32rpx;
+  font-weight: 800;
+  color: #14352D;
+  line-height: 1.4;
+}
+.a-meta {
+  font-size: 24rpx;
+  color: #4A7A6E;
+  font-weight: 600;
+  margin-top: 8rpx;
+}
+.a-fav {
+  font-size: 22rpx;
+  font-weight: 700;
+  color: #E24A4A;
+  background: rgba(226, 74, 74, 0.08);
+  padding: 6rpx 18rpx;
   border-radius: 999rpx;
+  border: 1.5rpx solid rgba(226, 74, 74, 0.18);
 }
-.a-note { font-size: 24rpx; color: #7A8A84; margin-top: 14rpx; line-height: 1.6; }
+.a-tags {
+  display: flex;
+  gap: 12rpx;
+  flex-wrap: wrap;
+  margin-top: 18rpx;
+}
+.tag {
+  font-size: 22rpx;
+  font-weight: 600;
+  color: #2D6A5D;
+  background: #EAF4F0;
+  padding: 6rpx 18rpx;
+  border-radius: 999rpx;
+  border: 1rpx solid rgba(31, 110, 95, 0.12);
+}
+.a-note {
+  font-size: 25rpx;
+  color: #3D5950;
+  margin-top: 16rpx;
+  line-height: 1.65;
+  background: #F8FAF9;
+  border-radius: 18rpx;
+  padding: 16rpx 20rpx;
+  border-left: 6rpx solid #1F6E5F;
+}
 .a-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 18rpx;
-  padding-top: 16rpx;
-  border-top: 2rpx solid #F2F6F4;
+  margin-top: 20rpx;
+  padding-top: 18rpx;
+  border-top: 1.5rpx solid #F0F4F2;
 }
-.a-creator { font-size: 22rpx; color: #C9D4D0; }
-.a-actions { display: flex; gap: 24rpx; }
-.a-act { font-size: 24rpx; color: #1F6E5F; font-weight: 600; }
-.empty { text-align: center; color: #A9B8B2; font-size: 26rpx; padding: 60rpx 0; }
+.a-creator {
+  font-size: 22rpx;
+  color: #7B938B;
+  font-weight: 500;
+}
+.a-actions {
+  display: flex;
+  gap: 16rpx;
+}
+.a-act {
+  font-size: 24rpx;
+  font-weight: 800;
+  color: #1F6E5F;
+  background: rgba(31, 110, 95, 0.08);
+  padding: 8rpx 22rpx;
+  border-radius: 999rpx;
+  transition: transform 0.15s ease;
+}
+.a-act:active {
+  transform: scale(0.92);
+}
+.empty {
+  text-align: center;
+  color: #7B938B;
+  font-size: 26rpx;
+  font-weight: 600;
+  padding: 80rpx 0;
+}
+
+/* 底部分享 CTA 浮动卡片 */
 .share-cta {
-  margin: 10rpx 32rpx 40rpx;
+  margin: 24rpx 32rpx 40rpx;
   display: flex;
   align-items: center;
-  gap: 16rpx;
-  background: linear-gradient(135deg, #34D0A8, #38B6E8);
-  border-radius: 24rpx;
-  padding: 24rpx 28rpx;
+  gap: 18rpx;
+  background: linear-gradient(135deg, #248875 0%, #17584C 100%);
+  border-radius: 32rpx;
+  padding: 28rpx 32rpx;
+  box-shadow: 0 12rpx 36rpx rgba(31, 110, 95, 0.28);
+  border: 1.5rpx solid rgba(255, 255, 255, 0.2);
+  transition: transform 0.15s ease;
 }
-.cta-emoji { font-size: 44rpx; }
-.cta-text { flex: 1; font-size: 24rpx; color: #FFFFFF; }
+.share-cta:active {
+  transform: scale(0.98);
+}
+.cta-emoji {
+  font-size: 48rpx;
+}
+.cta-text {
+  flex: 1;
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+  line-height: 1.4;
+}
 .cta-btn {
-  font-size: 24rpx;
+  font-size: 26rpx;
   color: #1F6E5F;
   background: #FFFFFF;
-  padding: 12rpx 26rpx;
+  padding: 14rpx 32rpx;
   border-radius: 999rpx;
-  font-weight: 700;
+  font-weight: 800;
+  box-shadow: 0 4rpx 14rpx rgba(0, 0, 0, 0.12);
 }
 </style>

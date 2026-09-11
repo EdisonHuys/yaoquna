@@ -55,6 +55,7 @@
 
 <script>
 import { store } from '../../store/index'
+import { api } from '../../api/index'
 import { timeAgo } from '../../utils/helper'
 
 export default {
@@ -62,7 +63,7 @@ export default {
     return {
       typeFilters: [
         { key: 'all', label: '全部' },
-        { key: 'choose', label: '选什么' },
+        { key: 'select', label: '选什么' },
         { key: 'go', label: '去不去' },
         { key: 'buy', label: '买不买' }
       ],
@@ -73,19 +74,31 @@ export default {
   computed: {
     filtered() {
       let list = store.decisions
-      if (this.typeFilter !== 'all') list = list.filter(d => d.type === this.typeFilter)
+      if (this.typeFilter === 'select') {
+        list = list.filter(d => d.type === 'select' || d.type === 'choose' || d.type === '0')
+      } else if (this.typeFilter === 'go') {
+        list = list.filter(d => d.type === 'go' || d.type === '1')
+      } else if (this.typeFilter === 'buy') {
+        list = list.filter(d => d.type === 'buy' || d.type === '2')
+      }
       return list
     }
   },
-  onShow() {
+  async onShow() {
     store.init()
+    try {
+      const res = await api.getDecisions()
+      if (res && res.data) {
+        store.decisions = res.data
+      }
+    } catch (e) { /* ignore */ }
     this.stats = store.getStats()
   },
   methods: {
     timeAgo,
     typeIcon(type) {
-      if (type === 'choose') return '🎡'
-      if (type === 'go') return '⚖️'
+      if (type === 'choose' || type === 'select' || type === '0') return '🎡'
+      if (type === 'go' || type === '1') return '⚖️'
       return '🛒'
     }
   }
@@ -95,37 +108,57 @@ export default {
 <style scoped>
 .archive-page {
   min-height: 100vh;
-  padding: 24rpx 32rpx 60rpx;
+  padding: 24rpx 32rpx calc(60rpx + constant(safe-area-inset-bottom));
+  padding: 24rpx 32rpx calc(60rpx + env(safe-area-inset-bottom));
   box-sizing: border-box;
 }
 .stat-hero {
   display: flex;
   background: linear-gradient(150deg, #DFF7F0 0%, #D5EEF7 100%);
-  border-radius: 28rpx;
+  border: 1.5rpx solid rgba(225, 237, 232, 0.9);
+  border-radius: 30rpx;
   padding: 34rpx 0;
+  box-shadow: 0 10rpx 32rpx rgba(27, 86, 73, 0.06);
 }
 .stat-big {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4rpx;
+  gap: 6rpx;
+  position: relative;
 }
-.sb-num { font-size: 52rpx; font-weight: 800; color: #1F6E5F; }
-.sb-label { font-size: 24rpx; color: #5E8F81; }
+.stat-big:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 15%;
+  height: 70%;
+  width: 2rpx;
+  background: rgba(31, 110, 95, 0.12);
+}
+.sb-num {
+  font-size: 56rpx;
+  font-weight: 900;
+  color: #1F6E5F;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.sb-label { font-size: 24rpx; font-weight: 600; color: #4A7A6E; }
 .fun-card {
   display: flex;
   align-items: center;
   gap: 18rpx;
   background: #FFFFFF;
-  border-radius: 24rpx;
+  border-radius: 26rpx;
+  border: 1.5rpx solid rgba(225, 237, 232, 0.9);
   padding: 26rpx 30rpx;
   margin-top: 24rpx;
-  box-shadow: 0 6rpx 24rpx rgba(31,110,95,0.05);
+  box-shadow: 0 8rpx 24rpx rgba(27, 86, 73, 0.04);
 }
-.fun-emoji { font-size: 48rpx; }
-.fun-text { font-size: 26rpx; color: #4A5D57; flex: 1; }
-.fun-num { color: #FF8A3D; font-weight: 800; font-size: 30rpx; }
+.fun-emoji { font-size: 52rpx; }
+.fun-text { font-size: 26rpx; font-weight: 600; color: #2D4A41; flex: 1; line-height: 1.4; }
+.fun-num { color: #FF7D42; font-weight: 900; font-size: 32rpx; }
 .filter-bar {
   white-space: nowrap;
   padding: 24rpx 0 0;
@@ -134,51 +167,80 @@ export default {
 }
 .filter-chip {
   display: inline-flex;
-  padding: 12rpx 30rpx;
+  padding: 12rpx 32rpx;
   border-radius: 999rpx;
   font-size: 26rpx;
+  font-weight: 600;
   background: #FFFFFF;
-  color: #7A8A84;
+  color: #5E7A71;
+  border: 1.5rpx solid rgba(225, 237, 232, 0.85);
   margin-right: 16rpx;
-  box-shadow: 0 4rpx 16rpx rgba(31,110,95,0.05);
+  box-shadow: 0 4rpx 14rpx rgba(27, 86, 73, 0.04);
+  transition: all 0.2s;
 }
-.filter-chip.on { background: #1F6E5F; color: #FFFFFF; font-weight: 600; }
+.filter-chip.on {
+  background: linear-gradient(135deg, #248875, #1B6557);
+  color: #FFFFFF;
+  font-weight: 700;
+  border-color: transparent;
+  box-shadow: 0 6rpx 18rpx rgba(27, 86, 73, 0.25);
+}
 .decision-list { margin-top: 24rpx; }
 .decision-item {
   display: flex;
   align-items: center;
   gap: 20rpx;
   background: #FFFFFF;
-  border-radius: 24rpx;
-  padding: 26rpx;
+  border-radius: 26rpx;
+  border: 1.5rpx solid rgba(225, 237, 232, 0.85);
+  padding: 24rpx 28rpx;
   margin-bottom: 18rpx;
-  box-shadow: 0 6rpx 24rpx rgba(31,110,95,0.05);
+  box-shadow: 0 6rpx 20rpx rgba(27, 86, 73, 0.04);
+  transition: transform 0.15s;
+}
+.decision-item:active {
+  transform: scale(0.98);
 }
 .d-type {
-  flex: 0 0 76rpx;
-  width: 76rpx;
-  height: 76rpx;
-  border-radius: 22rpx;
+  flex: 0 0 80rpx;
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 24rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 40rpx;
+  font-size: 42rpx;
 }
-.d-type.type-choose { background: #FFF3E8; }
-.d-type.type-go { background: #EAF4FF; }
-.d-type.type-buy { background: #E8F9F0; }
-.d-body { flex: 1; display: flex; flex-direction: column; gap: 6rpx; }
-.d-title { font-size: 28rpx; font-weight: 600; color: #1A3B34; }
-.d-detail { font-size: 22rpx; color: #A9B8B2; }
-.d-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8rpx; }
-.d-time { font-size: 22rpx; color: #C9D4D0; }
+.d-type.type-choose { background: #FFF4EB; }
+.d-type.type-go { background: #EBF4FD; }
+.d-type.type-buy { background: #EEF8F3; }
+.d-body { flex: 1; display: flex; flex-direction: column; gap: 6rpx; min-width: 0; }
+.d-title {
+  font-size: 30rpx;
+  font-weight: 800;
+  color: #14352D;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.d-detail {
+  font-size: 24rpx;
+  font-weight: 500;
+  color: #5E7A71;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.d-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8rpx; flex-shrink: 0; }
+.d-time { font-size: 22rpx; color: #8EA49D; }
 .d-done {
   font-size: 20rpx;
-  color: #A9B8B2;
-  background: #F2F6F4;
-  padding: 4rpx 14rpx;
+  font-weight: 600;
+  color: #8EA49D;
+  background: #F0F5F2;
+  padding: 4rpx 16rpx;
   border-radius: 999rpx;
 }
-.d-done.ok { color: #2EC77E; background: #E8F9F0; }
-.empty { text-align: center; color: #A9B8B2; font-size: 26rpx; padding: 80rpx 0; }
+.d-done.ok { color: #1F8A65; background: #EEF8F3; font-weight: 700; }
+.empty { text-align: center; color: #8EA49D; font-size: 26rpx; padding: 80rpx 0; }
 </style>

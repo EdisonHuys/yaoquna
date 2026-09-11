@@ -28,6 +28,7 @@ public interface FwMarkMapper
         + "left join sys_user u on u.user_id = m.user_id "
         + "left join fw_school s on s.school_id = m.school_id "
         + "where m.del_flag = '0' "
+        + "<if test='markId != null'> and m.mark_id = #{markId} </if>"
         + "<if test='userId != null'> and m.user_id = #{userId} </if>"
         + "<if test='category != null and category != \"\" and category != \"全部\"'> and m.category = #{category} </if>"
         + "<if test='shareScope != null and shareScope != \"\"'> and m.share_scope = #{shareScope} </if>"
